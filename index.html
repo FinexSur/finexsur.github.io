@@ -1,109 +1,208 @@
 <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Revista Digital</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        <!--=============== BOXICONS ===============-->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
 
-        <!--=============== CSS ===============-->
-        <link rel="stylesheet" href="assets/css/styles.css">
+    body.dark {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
 
-        <title>FinexSur</title>
-    </head>
-    <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-          
-            gtag('config', 'G-PTGEPV7F60');
-          </script>
-    <body>
-        <!--=============== HEADER ===============-->
-        <header class="header" id="header">
-            <nav class="nav container">
-                <a href="#" class="nav__logo">FinexSur</a>
-                <div class="nav__menu" id="nav-menu">
-                    <ul class="nav__list">
-                        <li class="nav__item">
-                            <a href="#home" class="nav__link active-link">
-                                <i class='bx bx-home-alt nav__icon'></i>
-                                <span class="nav__name">Inicio</span>
-                            </a>
-                        </li>
-                        
-                        <li class="nav__item">
-                            <a href="#about" class="nav__link">
-                                <i class='bx bx-user nav__icon'></i>
-                                <span class="nav__name">Nosotros</span>
-                            </a>
-                        </li>
+    .viewer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-                        <li class="nav__item">
-                            <a href="#skills" class="nav__link">
-                                <i class='bx bx-book-alt nav__icon'></i>
-                                <span class="nav__name">Servicios</span>
-                            </a>
-                        </li>
+    .page {
+      position: absolute;
+      width: 90%;
+      height: 90%;
+      background-color: transparent;
+      transition: transform 1s ease;
+      transform-origin: left;
+      backface-visibility: hidden;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-                        <li class="nav__item">
-                            <a href="#portfolio" class="nav__link">
-                                <i class='bx bx-briefcase-alt nav__icon'></i>
-                                <span class="nav__name">Portfolio</span>
-                            </a>
-                        </li>
+    .page img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-                        <li class="nav__item">
-                            <a href="#contactme" class="nav__link">
-                                <i class='bx bx-message-square-detail nav__icon'></i>
-                                <span class="nav__name">Contacto</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+    .page.flipped {
+      transform: rotateY(-180deg);
+      z-index: 0;
+    }
 
-                <img src="assets\img\logo.png" alt="" class="nav__img">
-            </nav>
-        </header>
-        <main>
-            <!--=============== HOME ===============-->
-            <section class="container section section__height" id="home">
-                <h2 class="section__title">Servicios de consultoria</h2>
-                <img src="assets\img\lawyers.jpg" alt="Descripción de la imagen" class="imagen1">
-                <div class="cuadro-texto">
-                   <h3>Mision</h3>
-                   <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus ipsum voluptates numquam odit commodi iusto quae, nemo veniam mollitia ea dolor eaque soluta molestias laudantium earum officiis voluptas est nihil!</p>
-                  </div>
-                  <div class="cuadro-texto">
-                    <h3>Vision</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus ipsum voluptates numquam odit commodi iusto quae, nemo veniam mollitia ea dolor eaque soluta molestias laudantium earum officiis voluptas est nihil!</p>
-                   </div>
-            </section>
+    .controls {
+      position: absolute;
+      top: 1rem;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
 
-            <!--=============== ABOUT ===============-->
-            <section class="container section section__height" id="about">
-                <h2 class="section__title">Nosotros</h2>
-            </section>
+    .viewer:hover .controls,
+    .viewer:focus-within .controls {
+      opacity: 1;
+      pointer-events: auto;
+    }
 
-            <!--=============== SKILLS ===============-->
-            <section class="container section section__height" id="skills">
-                <h2 class="section__title">Servicios</h2>
-            </section>
+    .nav-btn {
+      background-color: rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(6px);
+      color: #333;
+      border-radius: 10px;
+      padding: 0.4rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
 
-            <!--=============== PORTFOLIO ===============-->
-            <section class="container section section__height" id="portfolio">
-                <h2 class="section__title">Portfolio</h2>
-            </section>
+    .dark .nav-btn {
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #eee;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-            <!--=============== CONTACTME ===============-->
-            <section class="container section section__height" id="contactme">
-                <h2 class="section__title">Contacto</h2>
-            </section>
-        </main>
-        
+    .page-counter {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.5);
+      color: #333;
+      padding: 0.3rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      backdrop-filter: blur(6px);
+    }
 
-        <!--=============== MAIN JS ===============-->
-        <script src="assets/js/main.js"></script>
-    </body>
+    .dark .page-counter {
+      background: rgba(0, 0, 0, 0.5);
+      color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="viewer" id="viewer">
+    <div class="controls">
+      <button class="nav-btn" id="prev">◀</button>
+      <button class="nav-btn" id="next">▶</button>
+    </div>
+    <span class="page-counter" id="counter">Página 1</span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script>
+    const viewer = document.getElementById('viewer');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const counter = document.getElementById('counter');
+
+    let pdfDoc = null;
+    let currentPage = 1;
+    let pages = [];
+
+    const url = 'tu_revista.pdf'; // <-- Cambia a tu archivo PDF
+
+    // Detecta modo oscuro del sistema
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.add('dark');
+    }
+
+    pdfjsLib.getDocument(url).promise.then(pdf => {
+      pdfDoc = pdf;
+      loadPages();
+    });
+
+    async function loadPages() {
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        const pageDiv = document.createElement('div');
+        pageDiv.classList.add('page');
+        pageDiv.style.zIndex = pdfDoc.numPages - i;
+        pageDiv.innerHTML = `<img src="${canvas.toDataURL()}">`;
+
+        viewer.appendChild(pageDiv);
+        pages.push(pageDiv);
+      }
+      updateCounter();
+    }
+
+    function updateCounter() {
+      counter.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < pdfDoc.numPages) {
+        pages[currentPage - 1].classList.add('flipped');
+        currentPage++;
+        updateCounter();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        pages[currentPage - 1].classList.remove('flipped');
+        updateCounter();
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') nextBtn.click();
+      if (e.key === 'ArrowLeft') prevBtn.click();
+    });
+
+    // Swipe móvil
+    let startX = 0;
+    viewer.addEventListener('touchstart', e => {
+      startX = e.changedTouches[0].screenX;
+    });
+
+    viewer.addEventListener('touchend', e => {
+      const deltaX = e.changedTouches[0].screenX - startX;
+      if (Math.abs(deltaX) > 50) {
+        if (deltaX > 0) prevBtn.click();
+        else nextBtn.click();
+      }
+    });
+  </script>
+</body>
 </html>
