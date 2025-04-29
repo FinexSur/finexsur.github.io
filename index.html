@@ -55,7 +55,7 @@
     }
 
     .controls {
-      position: absolute;
+      position: relative;
       top: 1rem;
       width: 100%;
       display: flex;
@@ -107,6 +107,13 @@
       background: rgba(0, 0, 0, 0.5);
       color: #f0f0f0;
     }
+     /* Para que el botón de pantalla completa esté a la derecha */
+     #fullscreen {
+     position:fixed;
+     right: 1rem;
+     top: 1rem;
+     }
+
   </style>
 </head>
 <body>
@@ -115,6 +122,7 @@
     <div class="controls">
       <button class="nav-btn" id="prev">◀</button>
       <button class="nav-btn" id="next">▶</button>
+      <button class="nav-btn" id="fullscreen">⛶</button>
     </div>
     <span class="page-counter" id="counter">Página 1</span>
   </div>
@@ -184,6 +192,15 @@
         updateCounter();
       }
     });
+    const fullscreenBtn = document.getElementById('fullscreen');
+
+fullscreenBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
 
     document.addEventListener('keydown', e => {
       if (e.key === 'ArrowRight') nextBtn.click();
