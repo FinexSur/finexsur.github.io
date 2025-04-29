@@ -1,225 +1,290 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Revista Digital</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Revista Digital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      background-color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-    }
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden; /* Recommended: Prevents scrollbars during page transitions */
+        }
 
-    body.dark {
-      background-color: #121212;
-      color: #f0f0f0;
-    }
+        body.dark {
+            background-color: #121212;
+            color: #f0f0f0;
+        }
 
-    .viewer {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+        .viewer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* touch-action: manipulation;  Important for reliable touch events */
+        }
 
-    .page {
-      position: absolute;
-      width: 90%;
-      height: 90%;
-      background-color: transparent;
-      transition: transform 1s ease;
-      transform-origin: left;
-      backface-visibility: hidden;
-      z-index: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+        .page {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            background-color: transparent; /* Changed from white to transparent */
+            transition: transform 1s ease;
+            transform-origin: left;
+            backface-visibility: hidden;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .page img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* border: 1px solid #ccc;  Good for debugging layout */
+            border-radius: 8px; /* Add some border radius for a nicer look */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+        }
 
-    .page.flipped {
-      transform: rotateY(-180deg);
-      z-index: 0;
-    }
+        .page.flipped {
+            transform: rotateY(-180deg);
+            z-index: 0;
+        }
 
-    .controls {
-      position: relative;
-      top: 1rem;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 1rem;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+        .controls {
+            position: relative; /* Changed from absolute to relative */
+            top: 1rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100; /* Ensure controls are above pages */
+        }
 
-    .viewer:hover .controls,
-    .viewer:focus-within .controls {
-      opacity: 1;
-      pointer-events: auto;
-    }
+        .viewer:hover .controls,
+        .viewer:focus-within .controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-    .nav-btn {
-      background-color: rgba(255, 255, 255, 0.3);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(6px);
-      color: #333;
-      border-radius: 10px;
-      padding: 0.4rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+        .nav-btn {
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(6px);
+            color: #333;
+            border-radius: 10px;
+            padding: 0.4rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s; /* Added transform */
+        }
 
-    .dark .nav-btn {
-      background-color: rgba(0, 0, 0, 0.3);
-      color: #eee;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.5); /* Slightly lighter on hover */
+            transform: scale(1.05); /* Add a slight scale on hover */
+        }
 
-    .page-counter {
-      position: absolute;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,255,255,0.5);
-      color: #333;
-      padding: 0.3rem 0.8rem;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      backdrop-filter: blur(6px);
-    }
+        .nav-btn:active {
+            transform: scale(0.95); /* Add a slight scale down on click */
+        }
 
-    .dark .page-counter {
-      background: rgba(0, 0, 0, 0.5);
-      color: #f0f0f0;
-    }
-     /* Para que el botón de pantalla completa esté a la derecha */
-     #fullscreen {
-     position:fixed;
-     right: 1rem;
-     top: 1rem;
-     }
+        .dark .nav-btn {
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #eee;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-  </style>
+        .page-counter {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.5);
+            color: #333;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(6px);
+            z-index: 100; /* Ensure counter is above pages */
+        }
+
+        .dark .page-counter {
+            background: rgba(0, 0, 0, 0.5);
+            color: #f0f0f0;
+        }
+
+        #fullscreen {
+            position: fixed; /* Make it float */
+            right: 1rem;
+            top: 1rem;
+            z-index: 1000; /* High z-index */
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(6px);
+            color: #333;
+            border-radius: 10px;
+            padding: 0.4rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s; /* Added transform */
+        }
+
+        #fullscreen:hover {
+             background-color: rgba(255, 255, 255, 0.5); /* Slightly lighter on hover */
+             transform: scale(1.05);
+        }
+
+        #fullscreen:active{
+           transform: scale(0.95);
+        }
+
+        .dark #fullscreen {
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #eee;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+    </style>
 </head>
 <body>
 
-  <div class="viewer" id="viewer">
-    <div class="controls">
-      <button class="nav-btn" id="prev">◀</button>
-      <button class="nav-btn" id="next">▶</button>
-      <button class="nav-btn" id="fullscreen">⛶</button>
+    <div class="viewer" id="viewer">
+        <div class="controls">
+            <button class="nav-btn" id="prev">◀</button>
+            <button class="nav-btn" id="next">▶</button>
+            <button class="nav-btn" id="fullscreen">⛶</button>
+        </div>
+        <span class="page-counter" id="counter">Página 1</span>
     </div>
-    <span class="page-counter" id="counter">Página 1</span>
-  </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-  <script>
-    const viewer = document.getElementById('viewer');
-    const prevBtn = document.getElementById('prev');
-    const nextBtn = document.getElementById('next');
-    const counter = document.getElementById('counter');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+        const viewer = document.getElementById('viewer');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const counter = document.getElementById('counter');
+        const fullscreenBtn = document.getElementById('fullscreen');
 
-    let pdfDoc = null;
-    let currentPage = 1;
-    let pages = [];
 
-    const url = 'tu_revista.pdf'; // <-- Cambia a tu archivo PDF
+        let pdfDoc = null;
+        let currentPage = 1;
+        let pages = [];
+        let isFullscreenEnabled = false; // Track fullscreen state
 
-    // Detecta modo oscuro del sistema
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.body.classList.add('dark');
-    }
+        const url = 'tu_revista.pdf'; // <-- Cambia a tu archivo PDF
 
-    pdfjsLib.getDocument(url).promise.then(pdf => {
-      pdfDoc = pdf;
-      loadPages();
-    });
+        // Detecta modo oscuro del sistema
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark');
+        }
 
-    async function loadPages() {
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 });
+        pdfjsLib.getDocument(url).promise.then(pdf => {
+            pdfDoc = pdf;
+            loadPages();
+        });
 
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        async function loadPages() {
+            for (let i = 1; i <= pdfDoc.numPages; i++) {
+                const page = await pdfDoc.getPage(i);
+                const viewport = page.getViewport({ scale: 1.5 });
 
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
 
-        const pageDiv = document.createElement('div');
-        pageDiv.classList.add('page');
-        pageDiv.style.zIndex = pdfDoc.numPages - i;
-        pageDiv.innerHTML = `<img src="${canvas.toDataURL()}">`;
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
 
-        viewer.appendChild(pageDiv);
-        pages.push(pageDiv);
-      }
-      updateCounter();
-    }
+                const pageDiv = document.createElement('div');
+                pageDiv.classList.add('page');
+                pageDiv.style.zIndex = pdfDoc.numPages - i;
+                pageDiv.innerHTML = `<img src="${canvas.toDataURL()}">`;
 
-    function updateCounter() {
-      counter.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
-    }
+                viewer.appendChild(pageDiv);
+                pages.push(pageDiv);
+                if (i !== 1) {
+                    pageDiv.classList.add('flipped'); //hide all pages except first.
+                }
+            }
+            updateCounter();
+        }
 
-    nextBtn.addEventListener('click', () => {
-      if (currentPage < pdfDoc.numPages) {
-        pages[currentPage - 1].classList.add('flipped');
-        currentPage++;
-        updateCounter();
-      }
-    });
+        function updateCounter() {
+            counter.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
+        }
 
-    prevBtn.addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        pages[currentPage - 1].classList.remove('flipped');
-        updateCounter();
-      }
-    });
-    const fullscreenBtn = document.getElementById('fullscreen');
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < pdfDoc.numPages) {
+                pages[currentPage - 1].classList.add('flipped');
+                currentPage++;
+                updateCounter();
+            }
+        });
 
-fullscreenBtn.addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-});
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                pages[currentPage - 1].classList.remove('flipped');
+                updateCounter();
+            }
+        });
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'ArrowRight') nextBtn.click();
-      if (e.key === 'ArrowLeft') prevBtn.click();
-    });
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    isFullscreenEnabled = true;
+                    updateFullscreenButtonText();
+                }).catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                document.exitFullscreen().then(()=> {
+                    isFullscreenEnabled = false;
+                    updateFullscreenButtonText();
+                });
+            }
+        });
 
-    // Swipe móvil
-    let startX = 0;
-    viewer.addEventListener('touchstart', e => {
-      startX = e.changedTouches[0].screenX;
-    });
+        function updateFullscreenButtonText() {
+            fullscreenBtn.textContent = isFullscreenEnabled ? 'Shrink' : '⛶';
+        }
+        document.addEventListener('fullscreenchange', () => {
+            isFullscreenEnabled = !!document.fullscreenElement; // Update state
+            updateFullscreenButtonText(); //keep button text in sync
+        });
 
-    viewer.addEventListener('touchend', e => {
-      const deltaX = e.changedTouches[0].screenX - startX;
-      if (Math.abs(deltaX) > 50) {
-        if (deltaX > 0) prevBtn.click();
-        else nextBtn.click();
-      }
-    });
-  </script>
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight') nextBtn.click();
+            if (e.key === 'ArrowLeft') prevBtn.click();
+        });
+
+        // Swipe móvil
+        let startX = 0;
+        viewer.addEventListener('touchstart', e => {
+            startX = e.changedTouches[0].screenX;
+        });
+
+        viewer.addEventListener('touchend', e => {
+            const deltaX = e.changedTouches[0].screenX - startX;
+            if (Math.abs(deltaX) > 50) {
+                if (deltaX > 0) prevBtn.click();
+                else nextBtn.click();
+            }
+        });
+    </script>
 </body>
 </html>
