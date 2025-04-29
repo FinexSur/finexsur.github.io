@@ -62,6 +62,10 @@
             transform: rotateY(-180deg);
             z-index: 0;
         }
+        .page.current {
+            z-index: 2; /* Asegura que la página actual esté siempre al frente */
+            transform: rotateY(0); /* Asegura que la página actual no esté volteada */
+        }
 
         /* Estilos de los controles */
         .controls {
@@ -237,15 +241,17 @@
 
                     const pageDiv = document.createElement('div');
                     pageDiv.classList.add('page');
-                    pageDiv.style.zIndex = pdfDoc.numPages - i;
+                    if (i === 1) {
+                        pageDiv.classList.add('current'); // Marca la primera página como la página actual
+                    } else {
+                        pageDiv.classList.add('flipped'); // Oculta todas las páginas excepto la primera
+                    }
+                    pageDiv.style.zIndex = pdfDoc.numPages - i; // Establece el z-index inicial
+
                     pageDiv.innerHTML = `<img src="${canvas.toDataURL()}">`;
 
                     viewer.appendChild(pageDiv);
                     pages.push(pageDiv);
-
-                    if (i !== 1) {
-                        pageDiv.classList.add('flipped'); // Oculta todas las páginas excepto la primera
-                    }
                 }
                 updateCounter(); // Actualiza el contador de página después de cargar todas las páginas
             } catch (error) {
@@ -277,8 +283,11 @@
         // Evento para el botón "Siguiente"
         nextBtn.addEventListener('click', () => {
             if (currentPage < pdfDoc.numPages) {
+                pages[currentPage - 1].classList.remove('current'); // Oculta la página actual
                 pages[currentPage - 1].classList.add('flipped');
                 currentPage++;
+                pages[currentPage - 1].classList.remove('flipped'); // Muestra la nueva página actual
+                pages[currentPage - 1].classList.add('current');
                 updateCounter();
             }
         });
@@ -286,8 +295,11 @@
         // Evento para el botón "Anterior"
         prevBtn.addEventListener('click', () => {
             if (currentPage > 1) {
+                pages[currentPage - 1].classList.remove('current'); // Oculta la página actual
+                pages[currentPage - 1].classList.add('flipped');
                 currentPage--;
-                pages[currentPage - 1].classList.remove('flipped');
+                pages[currentPage - 1].classList.remove('flipped'); // Muestra la nueva página actual
+                pages[currentPage - 1].classList.add('current');
                 updateCounter();
             }
         });
