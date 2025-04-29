@@ -40,7 +40,7 @@
             position: absolute;
             width: 90%;
             height: 90%;
-            max-width: 800px; /* Añadido max-width para pantallas grandes */
+            max-width: 800px;
             max-height: 1000px;
             background-color: transparent;
             transition: transform 1s ease;
@@ -193,10 +193,88 @@
                 top: 0.5rem;
             }
         }
+
+        /* Estilos para el título translúcido */
+        .header-title {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.5rem 1.5rem;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            color: #333;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .header-title:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .header-title {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #eee;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .header-title:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilos para el pie de página */
+        .footer-info {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.5rem 1.5rem;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            color: #333;
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .footer-info:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .footer-info {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #eee;
+            border-top: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
+        .dark .footer-info:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
     </style>
 </head>
 <body>
-
+    <div class="header-title">
+        Revista Digital
+    </div>
     <div class="viewer" id="viewer">
         <div class="controls">
             <button class="nav-btn" id="prev">◀</button>
@@ -204,6 +282,9 @@
             <button class="nav-btn" id="fullscreen">⛶</button>
         </div>
         <span class="page-counter" id="counter">Página 1</span>
+    </div>
+    <div class="footer-info">
+        © 2025 Mi Revista Digital
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
@@ -214,6 +295,8 @@
         const nextBtn = document.getElementById('next');
         const counter = document.getElementById('counter');
         const fullscreenBtn = document.getElementById('fullscreen');
+        const headerTitle = document.querySelector('.header-title');
+        const footerInfo = document.querySelector('.footer-info');
 
         // Variables globales
         let pdfDoc = null;
@@ -330,36 +413,38 @@
             }
         });
 
+        // Función para activar la pantalla completa
+        function requestFullscreen() {
+            if (viewer.requestFullscreen) {
+                viewer.requestFullscreen();
+            } else if (viewer.webkitRequestFullscreen) { /* Safari */
+                viewer.webkitRequestFullscreen();
+            } else if (viewer.msRequestFullscreen) { /* IE11 */
+                viewer.msRequestFullscreen();
+            }
+        }
+
+        // Función para salir de la pantalla completa
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { /* Safari */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE11 */
+                document.msExitFullscreen();
+            }
+        }
+
         // Evento para el botón de pantalla completa
         fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().then(() => {
-                    isFullscreenEnabled = true;
-                    updateFullscreenButtonText();
-                }).catch(err => {
-                    console.error(`Error al habilitar el modo de pantalla completa: ${err.message} (${err.name})`);
-                    const errorDiv = document.createElement('div');
-                    errorDiv.style.cssText = `
-                        position: fixed;
-                        top: 2rem;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background-color: #dc3545;
-                        color: white;
-                        padding: 1rem;
-                        border-radius: 8px;
-                        z-index: 1000;
-                        font-size: 1rem;
-                    `;
-                    errorDiv.textContent = 'No se pudo activar la pantalla completa.';
-                    document.body.appendChild(errorDiv);
-
-                });
+                requestFullscreen();
+                isFullscreenEnabled = true;
+                updateFullscreenButtonText();
             } else {
-                document.exitFullscreen().then(() => {
-                    isFullscreenEnabled = false;
-                    updateFullscreenButtonText();
-                });
+                exitFullscreen();
+                isFullscreenEnabled = false;
+                updateFullscreenButtonText();
             }
         });
 
