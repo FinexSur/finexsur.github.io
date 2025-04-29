@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Revista Digital</title>
     <style>
+        /* Estilos generales */
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +17,7 @@
             height: 100%;
             background-color: #fff;
             font-family: 'Segoe UI', sans-serif;
-            overflow: hidden; /* Recommended: Prevents scrollbars during page transitions */
+            overflow: hidden; /* Previene barras de desplazamiento innecesarias */
         }
 
         body.dark {
@@ -24,6 +25,7 @@
             color: #f0f0f0;
         }
 
+        /* Estilos del visor */
         .viewer {
             position: relative;
             width: 100vw;
@@ -31,17 +33,17 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* touch-action: manipulation;  Important for reliable touch events */
+            /* touch-action: manipulation;  Importante para eventos táctiles */
         }
 
         .page {
             position: absolute;
             width: 90%;
             height: 90%;
-            background-color: transparent; /* Changed from white to transparent */
+            background-color: transparent;
             transition: transform 1s ease;
             transform-origin: left;
-            backface-visibility: hidden;
+            backface-visibility: hidden; /* Mejora el rendimiento de la animación */
             z-index: 1;
             display: flex;
             justify-content: center;
@@ -52,9 +54,8 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            /* border: 1px solid #ccc;  Good for debugging layout */
-            border-radius: 8px; /* Add some border radius for a nicer look */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .page.flipped {
@@ -62,23 +63,24 @@
             z-index: 0;
         }
 
+        /* Estilos de los controles */
         .controls {
-            position: relative; /* Changed from absolute to relative */
+            position: relative; /* Cambiado de absolute a relative */
             top: 1rem;
             width: 100%;
             display: flex;
             justify-content: space-between;
             padding: 0 1rem;
-            pointer-events: none;
+            pointer-events: none; /* Permite que los eventos pasen a través de los controles, excepto cuando son visibles */
             opacity: 0;
             transition: opacity 0.3s;
-            z-index: 100; /* Ensure controls are above pages */
+            z-index: 100; /* Asegura que los controles estén por encima de las páginas */
         }
 
         .viewer:hover .controls,
         .viewer:focus-within .controls {
             opacity: 1;
-            pointer-events: auto;
+            pointer-events: auto; /* Reactiva los eventos cuando los controles son visibles */
         }
 
         .nav-btn {
@@ -90,16 +92,16 @@
             padding: 0.4rem 1rem;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.3s, transform 0.2s; /* Added transform */
+            transition: background 0.3s, transform 0.2s;
         }
 
         .nav-btn:hover {
-            background-color: rgba(255, 255, 255, 0.5); /* Slightly lighter on hover */
-            transform: scale(1.05); /* Add a slight scale on hover */
+            background-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
         }
 
         .nav-btn:active {
-            transform: scale(0.95); /* Add a slight scale down on click */
+            transform: scale(0.95);
         }
 
         .dark .nav-btn {
@@ -108,6 +110,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        /* Estilos del contador de página */
         .page-counter {
             position: absolute;
             bottom: 1rem;
@@ -119,7 +122,7 @@
             border-radius: 12px;
             font-size: 0.9rem;
             backdrop-filter: blur(6px);
-            z-index: 100; /* Ensure counter is above pages */
+            z-index: 100;
         }
 
         .dark .page-counter {
@@ -127,11 +130,12 @@
             color: #f0f0f0;
         }
 
+        /* Estilos del botón de pantalla completa */
         #fullscreen {
-            position: fixed; /* Make it float */
+            position: fixed;
             right: 1rem;
             top: 1rem;
-            z-index: 1000; /* High z-index */
+            z-index: 1000;
             background-color: rgba(255, 255, 255, 0.3);
             border: 1px solid rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(6px);
@@ -140,16 +144,16 @@
             padding: 0.4rem 1rem;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.3s, transform 0.2s; /* Added transform */
+            transition: background 0.3s, transform 0.2s;
         }
 
         #fullscreen:hover {
-             background-color: rgba(255, 255, 255, 0.5); /* Slightly lighter on hover */
-             transform: scale(1.05);
+            background-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
         }
 
-        #fullscreen:active{
-           transform: scale(0.95);
+        #fullscreen:active {
+            transform: scale(0.95);
         }
 
         .dark #fullscreen {
@@ -157,7 +161,6 @@
             color: #eee;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
     </style>
 </head>
 <body>
@@ -173,60 +176,105 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script>
+        // Obtención de elementos del DOM
         const viewer = document.getElementById('viewer');
         const prevBtn = document.getElementById('prev');
         const nextBtn = document.getElementById('next');
         const counter = document.getElementById('counter');
         const fullscreenBtn = document.getElementById('fullscreen');
 
-
+        // Variables globales
         let pdfDoc = null;
         let currentPage = 1;
         let pages = [];
-        let isFullscreenEnabled = false; // Track fullscreen state
+        let isFullscreenEnabled = false;
 
-        const url = 'tu_revista.pdf'; // <-- Cambia a tu archivo PDF
+        // Ruta del archivo PDF (¡Asegúrate de que la ruta sea correcta!)
+        const url = 'tu_revista.pdf';
 
-        // Detecta modo oscuro del sistema
+        // Detecta el modo oscuro del sistema
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.body.classList.add('dark');
         }
 
+        // Carga el PDF utilizando pdf.js
         pdfjsLib.getDocument(url).promise.then(pdf => {
             pdfDoc = pdf;
-            loadPages();
+            loadPages(); // Llama a la función para cargar las páginas
+        }).catch(error => {
+            console.error('Error al cargar el PDF:', error);
+            // Muestra un mensaje de error al usuario (¡Importante para la UX!)
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #dc3545;
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 1rem;
+            `;
+            errorDiv.textContent = 'No se pudo cargar el PDF. Por favor, verifica la ruta del archivo.';
+            document.body.appendChild(errorDiv);
         });
 
+        // Función para cargar y mostrar las páginas del PDF
         async function loadPages() {
-            for (let i = 1; i <= pdfDoc.numPages; i++) {
-                const page = await pdfDoc.getPage(i);
-                const viewport = page.getViewport({ scale: 1.5 });
+            try {
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    const page = await pdfDoc.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
 
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
 
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
 
-                const pageDiv = document.createElement('div');
-                pageDiv.classList.add('page');
-                pageDiv.style.zIndex = pdfDoc.numPages - i;
-                pageDiv.innerHTML = `<img src="${canvas.toDataURL()}">`;
+                    const pageDiv = document.createElement('div');
+                    pageDiv.classList.add('page');
+                    pageDiv.style.zIndex = pdfDoc.numPages - i;
+                    pageDiv.innerHTML = `<img src="${canvas.toDataURL()}">`;
 
-                viewer.appendChild(pageDiv);
-                pages.push(pageDiv);
-                if (i !== 1) {
-                    pageDiv.classList.add('flipped'); //hide all pages except first.
+                    viewer.appendChild(pageDiv);
+                    pages.push(pageDiv);
+
+                    if (i !== 1) {
+                        pageDiv.classList.add('flipped'); // Oculta todas las páginas excepto la primera
+                    }
                 }
+                updateCounter(); // Actualiza el contador de página después de cargar todas las páginas
+            } catch (error) {
+                console.error('Error al procesar las páginas del PDF:', error);
+                // Muestra un mensaje de error al usuario
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                    position: fixed;
+                    top: 2rem;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: #dc3545;
+                    color: white;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    font-size: 1rem;
+                `;
+                errorDiv.textContent = 'Ocurrió un error al mostrar las páginas del PDF.';
+                document.body.appendChild(errorDiv);
             }
-            updateCounter();
         }
 
+        // Función para actualizar el contador de página
         function updateCounter() {
             counter.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
         }
 
+        // Evento para el botón "Siguiente"
         nextBtn.addEventListener('click', () => {
             if (currentPage < pdfDoc.numPages) {
                 pages[currentPage - 1].classList.add('flipped');
@@ -235,6 +283,7 @@
             }
         });
 
+        // Evento para el botón "Anterior"
         prevBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -243,30 +292,52 @@
             }
         });
 
+        // Evento para el botón de pantalla completa
         fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().then(() => {
                     isFullscreenEnabled = true;
                     updateFullscreenButtonText();
                 }).catch(err => {
-                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                    console.error(`Error al habilitar el modo de pantalla completa: ${err.message} (${err.name})`);
+                    // Muestra un mensaje de error al usuario
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.cssText = `
+                        position: fixed;
+                        top: 2rem;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background-color: #dc3545;
+                        color: white;
+                        padding: 1rem;
+                        border-radius: 8px;
+                        z-index: 1000;
+                        font-size: 1rem;
+                    `;
+                    errorDiv.textContent = 'No se pudo activar la pantalla completa.';
+                    document.body.appendChild(errorDiv);
+
                 });
             } else {
-                document.exitFullscreen().then(()=> {
+                document.exitFullscreen().then(() => {
                     isFullscreenEnabled = false;
                     updateFullscreenButtonText();
                 });
             }
         });
 
+        // Función para actualizar el texto del botón de pantalla completa
         function updateFullscreenButtonText() {
             fullscreenBtn.textContent = isFullscreenEnabled ? 'Shrink' : '⛶';
         }
+
+        // Evento para detectar cambios en el estado de pantalla completa
         document.addEventListener('fullscreenchange', () => {
-            isFullscreenEnabled = !!document.fullscreenElement; // Update state
-            updateFullscreenButtonText(); //keep button text in sync
+            isFullscreenEnabled = !!document.fullscreenElement;
+            updateFullscreenButtonText();
         });
 
+        // Evento para navegación con teclado
         document.addEventListener('keydown', e => {
             if (e.key === 'ArrowRight') nextBtn.click();
             if (e.key === 'ArrowLeft') prevBtn.click();
