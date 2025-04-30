@@ -172,257 +172,266 @@
     </button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-<script>
-    // Configuración inicial
-    const config = {
-        pdfUrl: 'https://drive.google.com/uc?export=download&id=1rkRV4TPQq6JNzAXhVgLq7NNEQbNSsqvs',
-        scale: 1.5,
-        minScale: 0.8,
-        maxScale: 2.5,
-        debug: false
-    };
+    <script>
+        // Configuración inicial
+        const config = {
+            pdfUrl: 'tu_revista.pdf',
+            scale: 1.5,
+            minScale: 0.8,
+            maxScale: 2.5,
+            debug: false
+        };
 
-    // Variables globales
-    let pdfDoc = null;
-    let currentPage = 1;
-    let pages = [];
-    let isFullscreen = false;
-    let theme = 'light';
+        // Variables globales
+        let pdfDoc = null;
+        let currentPage = 1;
+        let pages = [];
+        let isFullscreen = false;
+        let theme = 'light';
 
-    // Elementos DOM
-    const viewer = document.getElementById('viewer');
-    const prevBtn = document.getElementById('prev');
-    const nextBtn = document.getElementById('next');
-    const counter = document.getElementById('counter');
-    const fullscreenBtn = document.getElementById('fullscreen');
-    const themeToggle = document.getElementById('themeToggle');
+        // Elementos DOM
+        const viewer = document.getElementById('viewer');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const counter = document.getElementById('counter');
+        const fullscreenBtn = document.getElementById('fullscreen');
+        const themeToggle = document.getElementById('themeToggle');
 
-    // Inicialización
-    (() => {
-        initializeTheme();
-        setupEventListeners();
+        // Inicialización
+        (() => {
+            initializeTheme();
+            setupEventListeners();
+            
+            // Cargar PDF
+            pdfjsLib.getDocument(config.pdfUrl).promise.then(pdf => {
+                pdfDoc = pdf;
+                return renderInitialPages();
+            }).catch(handleError);
+        })();
 
-        // Cargar PDF
-        pdfjsLib.getDocument(config.pdfUrl).promise.then(pdf => {
-            pdfDoc = pdf;
-            return renderInitialPages();
-        }).catch(handleError);
-    })();
-
-    // Event Listeners
-    function setupEventListeners() {
-        prevBtn.addEventListener('click', navigatePrev);
-        nextBtn.addEventListener('click', navigateNext);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        document.addEventListener('fullscreenchange', updateFullscreenState);
-        document.addEventListener('keydown', handleKeyboardNav);
-        viewer.addEventListener('touchstart', handleTouchStart);
-        viewer.addEventListener('touchend', handleTouchEnd);
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-
-    function navigatePrev() {
-        if (currentPage > 1) {
-            updatePage(currentPage - 1);
-        }
-    }
-
-    function navigateNext() {
-        if (currentPage < pdfDoc.numPages) {
-            updatePage(currentPage + 1);
-        }
-    }
-
-    function updatePage(newPage) {
-        pages[currentPage - 1].classList.remove('current');
-        pages[currentPage - 1].classList.add('flipped');
-
-        currentPage = newPage;
-
-        ensurePageRendered(currentPage);
-
-        pages[currentPage - 1].classList.remove('flipped');
-        pages[currentPage - 1].classList.add('current');
-
-        updateCounter();
-        announcePageChange();
-    }
-
-    async function renderInitialPages() {
-        await renderSinglePage(1);
-
-        for (let i = 2; i <= pdfDoc.numPages; i++) {
-            createPageContainer(i);
+        // Event Listeners
+        function setupEventListeners() {
+            prevBtn.addEventListener('click', navigatePrev);
+            nextBtn.addEventListener('click', navigateNext);
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            document.addEventListener('fullscreenchange', updateFullscreenState);
+            document.addEventListener('keydown', handleKeyboardNav);
+            viewer.addEventListener('touchstart', handleTouchStart);
+            viewer.addEventListener('touchend', handleTouchEnd);
+            themeToggle.addEventListener('click', toggleTheme);
         }
 
-        updateCounter();
-    }
-
-    async function ensurePageRendered(pageNumber) {
-        if (!pages[pageNumber - 1] || !pages[pageNumber - 1].querySelector('img')) {
-            await renderSinglePage(pageNumber);
-        }
-    }
-
-    async function renderSinglePage(pageNumber) {
-        try {
-            const page = await pdfDoc.getPage(pageNumber);
-            const viewport = getOptimizedViewport(page);
-
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            await page.render({
-                canvasContext: context,
-                viewport: viewport
-            }).promise;
-
-            const pageDiv = pages[pageNumber - 1] || createPageContainer(pageNumber);
-            pageDiv.innerHTML = `<img src="${canvas.toDataURL()}" alt="Página ${pageNumber}">`;
-
-            if (pageNumber === 1) {
-                pageDiv.classList.add('current');
-            } else {
-                pageDiv.classList.add('flipped');
+        // Navegación
+        function navigatePrev() {
+            if (currentPage > 1) {
+                updatePage(currentPage - 1);
             }
+        }
 
+        function navigateNext() {
+            if (currentPage < pdfDoc.numPages) {
+                updatePage(currentPage + 1);
+            }
+        }
+
+        function updatePage(newPage) {
+            pages[currentPage - 1].classList.remove('current');
+            pages[currentPage - 1].classList.add('flipped');
+            
+            currentPage = newPage;
+            
+            ensurePageRendered(currentPage);
+            
+            pages[currentPage - 1].classList.remove('flipped');
+            pages[currentPage - 1].classList.add('current');
+            
+            updateCounter();
+            announcePageChange();
+        }
+
+        // Renderizado inteligente
+        async function renderInitialPages() {
+            // Renderizar primera página
+            await renderSinglePage(1);
+            
+            // Preparar contenedor para páginas siguientes
+            for (let i = 2; i <= pdfDoc.numPages; i++) {
+                createPageContainer(i);
+            }
+            
+            updateCounter();
+        }
+
+        async function ensurePageRendered(pageNumber) {
+            if (!pages[pageNumber - 1] || !pages[pageNumber - 1].querySelector('img')) {
+                await renderSinglePage(pageNumber);
+            }
+        }
+
+        async function renderSinglePage(pageNumber) {
+            try {
+                const page = await pdfDoc.getPage(pageNumber);
+                const viewport = getOptimizedViewport(page);
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                await page.render({ 
+                    canvasContext: context, 
+                    viewport: viewport 
+                }).promise;
+
+                const pageDiv = pages[pageNumber - 1] || createPageContainer(pageNumber);
+                pageDiv.innerHTML = `<img src="${canvas.toDataURL()}" alt="Página ${pageNumber}">`;
+                
+                if (pageNumber === 1) {
+                    pageDiv.classList.add('current');
+                } else if (pageNumber > 1) {
+                    pageDiv.classList.add('flipped');
+                }
+                
+                return pageDiv;
+            } catch (error) {
+                handleError(error, `Error al renderizar página ${pageNumber}`);
+            }
+        }
+
+        function createPageContainer(pageNumber) {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'page';
+            pageDiv.style.zIndex = pdfDoc.numPages - pageNumber;
+            pages.push(pageDiv);
+            viewer.appendChild(pageDiv);
             return pageDiv;
-        } catch (error) {
-            handleError(error, `Error al renderizar página ${pageNumber}`);
         }
-    }
 
-    function createPageContainer(pageNumber) {
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'page';
-        pageDiv.style.zIndex = pdfDoc.numPages - pageNumber;
-        pages.push(pageDiv);
-        viewer.appendChild(pageDiv);
-        return pageDiv;
-    }
-
-    function getOptimizedViewport(page) {
-        const devicePixelRatio = window.devicePixelRatio || 1;
-        const adjustedScale = Math.min(
-            Math.max(config.scale * devicePixelRatio, config.minScale),
-            config.maxScale
-        );
-        return page.getViewport({ scale: adjustedScale });
-    }
-
-    function updateCounter() {
-        counter.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
-    }
-
-    function announcePageChange() {
-        const status = document.createElement('div');
-        status.className = 'visually-hidden';
-        status.setAttribute('aria-live', 'assertive');
-        status.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
-        document.body.appendChild(status);
-        setTimeout(() => document.body.removeChild(status), 1000);
-    }
-
-    // Fullscreen
-    function toggleFullscreen() {
-        if (!isFullscreen) {
-            requestFullscreen(viewer);
-        } else {
-            exitFullscreen();
+        // Helpers
+        function getOptimizedViewport(page) {
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            const adjustedScale = Math.min(
+                Math.max(config.scale * devicePixelRatio, config.minScale),
+                config.maxScale
+            );
+            
+            return page.getViewport({ scale: adjustedScale });
         }
-    }
 
-    function requestFullscreen(element) {
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        } else if (element.webkitRequestFullscreen) {
-            element.webkitRequestFullscreen();
-        } else if (element.msRequestFullscreen) {
-            element.msRequestFullscreen();
+        function updateCounter() {
+            counter.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
         }
-    }
 
-    function exitFullscreen() {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
+        function announcePageChange() {
+            // Implementar aviso para lectores de pantalla
+            const status = document.createElement('div');
+            status.className = 'visually-hidden';
+            status.setAttribute('aria-live', 'assertive');
+            status.textContent = `Página ${currentPage} de ${pdfDoc.numPages}`;
+            document.body.appendChild(status);
+            
+            setTimeout(() => document.body.removeChild(status), 1000);
         }
-    }
 
-    function updateFullscreenState() {
-        isFullscreen = !!document.fullscreenElement;
-        fullscreenBtn.textContent = isFullscreen ? 'Shrink' : '⛶';
-    }
-
-    // Touch Navigation
-    let startX = 0;
-    function handleTouchStart(e) {
-        startX = e.changedTouches[0].screenX;
-        viewer.style.transition = 'transform 0.2s';
-    }
-
-    function handleTouchEnd(e) {
-        const deltaX = e.changedTouches[0].screenX - startX;
-        viewer.style.transition = 'transform 0s';
-
-        if (Math.abs(deltaX) > 50) {
-            if (deltaX > 0) navigatePrev();
-            else navigateNext();
+        // Fullscreen
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                requestFullscreen(viewer);
+            } else {
+                exitFullscreen();
+            }
         }
-    }
 
-    // Keyboard Navigation
-    function handleKeyboardNav(e) {
-        if (e.key === 'ArrowRight') navigateNext();
-        if (e.key === 'ArrowLeft') navigatePrev();
-        if (e.key === 'Home') updatePage(1);
-        if (e.key === 'End') updatePage(pdfDoc.numPages);
-    }
+        function requestFullscreen(element) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
 
-    // Theme
-    function initializeTheme() {
-        const savedTheme = localStorage.getItem('theme') ||
-            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        setTheme(savedTheme);
-    }
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
 
-    function setTheme(newTheme) {
-        theme = newTheme;
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
+        function updateFullscreenState() {
+            isFullscreen = !!document.fullscreenElement;
+            fullscreenBtn.textContent = isFullscreen ? 'Shrink' : '⛶';
+        }
 
-    function toggleTheme() {
-        setTheme(theme === 'light' ? 'dark' : 'light');
-    }
+        // Touch Navigation
+        let startX = 0;
+        function handleTouchStart(e) {
+            startX = e.changedTouches[0].screenX;
+            viewer.style.transition = 'transform 0.2s';
+        }
 
-    // Errores
-    function handleError(error, message = 'Error al cargar el PDF') {
-        console.error(message, error);
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = `
-            position: fixed;
-            top: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #dc3545;
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            z-index: 1000;
-            font-size: 1rem;
-        `;
-        errorDiv.textContent = message;
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 5000);
-    }
-</script>
+        function handleTouchEnd(e) {
+            const deltaX = e.changedTouches[0].screenX - startX;
+            viewer.style.transition = 'transform 0s';
+            
+            if (Math.abs(deltaX) > 50) {
+                if (deltaX > 0) navigatePrev();
+                else navigateNext();
+            }
+        }
+
+        // Keyboard Navigation
+        function handleKeyboardNav(e) {
+            if (e.key === 'ArrowRight') navigateNext();
+            if (e.key === 'ArrowLeft') navigatePrev();
+            if (e.key === 'Home') updatePage(1);
+            if (e.key === 'End') updatePage(pdfDoc.numPages);
+        }
+
+        // Theme Management
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 
+                              (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            setTheme(savedTheme);
+        }
+
+        function setTheme(newTheme) {
+            theme = newTheme;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            setTheme(theme === 'light' ? 'dark' : 'light');
+        }
+
+        // Error Handling
+        function handleError(error, message = 'Error al cargar el PDF') {
+            console.error(message, error);
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #dc3545;
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 1rem;
+            `;
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+    </script>
 </body>
 </html>
