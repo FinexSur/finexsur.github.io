@@ -86,7 +86,7 @@
 
         .controls {
             position: absolute;
-            bottom: 3rem; /* Antes era top: 1rem */
+            top: 3rem; /* Antes era top: 1rem */
             width: 100%;
             display: flex;
             justify-content: space-between;
@@ -137,23 +137,10 @@
         }
 
         @media (max-width: 768px) {
-    .page {
-        width: 95vw; /* Ocupa casi todo el ancho */
-        height: auto;
-        max-height: 85vh; /* Deja espacio para controles */
-    }
-
-    .nav-btn {
-        font-size: 1rem; /* Botones más grandes */
-        padding: 0.5rem 1.2rem;
-    }
-
-    .page-counter {
-        font-size: 0.8rem;
-        padding: 0.3rem 0.7rem;
-        bottom: 14rem; /* Mueve el contador arriba de los botones */
-    }
-}
+            .page { width: 95%; height: 95%; }
+            .nav-btn { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
+            .page-counter { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+        }
 
         /* Accessibility */
         .visually-hidden {
